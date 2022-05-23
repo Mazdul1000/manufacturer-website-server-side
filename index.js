@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const res = require('express/lib/response');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -42,6 +43,7 @@ async function run(){
     const userCollection = client.db('agri-tools').collection('users');
     const reviewCollection = client.db('agri-tools').collection('reviews');
     const productCollection = client.db('agri-tools').collection('products');
+    const orderCollection = client.db('agri-tools').collection('orders');
 
     // Admin verification:
 
@@ -58,7 +60,21 @@ async function run(){
     }
 
 
-    
+    // Create API for products
+    app.get('/products', async (req, res) =>{
+        const products = await productCollection.find().toArray();
+        res.send(products);
+    })
+
+    // Create API for get product with id
+    app.get('/product/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const product = await productCollection.findOne(query);
+        res.send(product);
+    });
+
+
 
     // Creating users api
     app.get('/users', verifyToken, async(req,res) => {
@@ -93,6 +109,42 @@ async function run(){
     app.get('/reviews', async (req, res) => {
         const reviews = await reviewCollection.find().toArray();
         res.send(reviews);
+    })
+
+    //  Adding Order API
+
+    app.post('/order', async(req, res) => {
+        const order = req.body;
+        const result = await orderCollection.insertOne(order);
+        res.send(result);
+    })
+
+    // get ALL orders API
+    app.get('/orders',verifyToken, async (req, res)=> {
+        const orders = await orderCollection.find().toArray();
+        res.send(orders);
+    })
+
+    // Get order list for specifict buyer:
+    app.get('/order',verifyToken, async (req, res) => {
+        const email = req.query.email;
+        const decodedEmail = req.decoded.email;
+
+        if(email === decodedEmail){
+            const query = {email:email}
+            const orders = await orderCollection.find(query).toArray();
+            return res.send(orders)
+        }
+        else{
+            return res.status(403).send({message: 'Access forbidden'})
+        }
+    })
+
+    app.get('/order/:id', async(req, res) => {
+        const id = req.params.id;
+        const query = {_id: ObjectId(id)};
+        const result = await orderCollection.deleteOne(query);
+        app.send(result);
     })
 
     }
