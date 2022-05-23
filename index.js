@@ -82,6 +82,22 @@ async function run(){
         res.send(users);
     })
 
+    // Create single user API:
+
+    app.get('/user',verifyToken, async (req, res) => {
+        const email = req.query.email;
+        const decodedEmail = req.decoded.email;
+
+        if(email === decodedEmail){
+            const query = {email:email}
+            const userData = await userCollection.find(query).toArray();
+            return res.send(userData)
+        }
+        else{
+            return res.status(403).send({message: 'Access forbidden'})
+        }
+    })
+
     // adding users to database:
     app.put('/user/:email', async (req,res) => {
         const email = req.params.email;
@@ -140,11 +156,11 @@ async function run(){
         }
     })
 
-    app.get('/order/:id', async(req, res) => {
+    app.delete('/order/:id', async(req, res) => {
         const id = req.params.id;
         const query = {_id: ObjectId(id)};
         const result = await orderCollection.deleteOne(query);
-        app.send(result);
+        res.send(result);
     })
 
     }
