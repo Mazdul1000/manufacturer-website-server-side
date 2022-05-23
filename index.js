@@ -60,7 +60,7 @@ async function run() {
         }
 
         //     Create admin API
-        app.put('/user/admin/:email', verifyToken, async (req, res) => {
+        app.put('/user/admin/:email', verifyToken,verifyAdmin, async (req, res) => {
             const email = req.params.email;
             const filter = { email: email }
 
@@ -124,6 +124,20 @@ async function run() {
                 process.env.ACCESS_TOKEN, { expiresIn: '30d' })
             res.send({ result, token });
         });
+
+        // Update User Information From Database:
+
+        app.put('/user/profile/:email', verifyToken, async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email }
+            const user = req.body;
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+        
 
         // Adding review api 
         app.post('/review', async (req, res) => {
