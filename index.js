@@ -169,7 +169,7 @@ async function run() {
         })
 
         // get ALL orders API
-        app.get('/orders', verifyToken, async (req, res) => {
+        app.get('/orders', verifyToken,verifyAdmin, async (req, res) => {
             const orders = await orderCollection.find().toArray();
             res.send(orders);
         })
@@ -204,6 +204,14 @@ async function run() {
         const product = req.body;
         const result = await productCollection.insertOne(product);
         res.send(result)
+    })
+
+    //  Delete Product API:
+    app.delete('/product/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await productCollection.deleteOne(query);
+        res.send(result);
     })
 
     }
