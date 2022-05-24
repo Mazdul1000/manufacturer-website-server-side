@@ -49,9 +49,8 @@ async function run() {
 
         const verifyAdmin = async (req, res, next) => {
             const requestor = req.decoded.email;
-            const requestorAccount = await userCollection.findOne({ email: requestor });
-
-            if (requestor.role === 'admin') {
+            const requestorIdentity = await userCollection.findOne({ email: requestor });
+            if (requestorIdentity.role === 'admin') {
                 next();
             }
             else {
@@ -190,6 +189,8 @@ async function run() {
             }
         })
 
+        // API for Delete order:
+
         app.delete('/order/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -198,7 +199,12 @@ async function run() {
         })
 
 
-
+    //    Add Product API:
+    app.post('/product', async (req, res) => {
+        const product = req.body;
+        const result = await productCollection.insertOne(product);
+        res.send(result)
+    })
 
     }
 
