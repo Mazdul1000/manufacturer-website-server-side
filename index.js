@@ -71,6 +71,15 @@ async function run() {
             res.send(result);
         })
 
+        // Check If requestor is admin:
+        app.get('/admin/:email', async(req,res) => {
+            const email = req.params.email;
+            const user = await userCollection.findOne({email: email});
+            const isAdmin = user.role === 'admin';
+            res.send({admin:isAdmin});
+        })
+
+
         // Create API for products
         app.get('/products', async (req, res) => {
             const products = await productCollection.find().toArray();
@@ -88,7 +97,7 @@ async function run() {
 
 
         // Creating users api
-        app.get('/users', verifyToken, async (req, res) => {
+        app.get('/users', verifyToken,verifyAdmin, async (req, res) => {
             const users = await userCollection.find().toArray();
             res.send(users);
         })
