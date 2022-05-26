@@ -189,6 +189,16 @@ async function run() {
             }
         })
 
+        // Get particular order with id:
+  
+        app.get('/order/:id', async (req, res)=> {
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const order = await orderCollection.findOne(query);
+            res.send(order);
+        })
+
+
         // API for Delete order:
 
         app.delete('/order/:id', async (req, res) => {
